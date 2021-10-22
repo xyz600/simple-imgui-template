@@ -19,7 +19,7 @@ class ImguiOpenGL2Viewer
 {
 public:
     inline ImguiOpenGL2Viewer(const std::string title, const int height, const int width)
-        : m_window_(nullptr)
+        : m_window_(nullptr), m_show_demo_window_(false), m_show_another_window_(true), m_clear_color_(0.45f, 0.55f, 0.60f, 1.00f)
     {
         // Setup window
         glfwSetErrorCallback(glfw_error_callback);
@@ -51,11 +51,6 @@ public:
 
     void render()
     {
-        // Our state
-        bool show_demo_window = true;
-        bool show_another_window = false;
-        ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
-
         // Main loop
         while (!glfwWindowShouldClose(m_window_))
         {
@@ -71,49 +66,15 @@ public:
             ImGui_ImplGlfw_NewFrame();
             ImGui::NewFrame();
 
-            // 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
-            if (show_demo_window)
-                ImGui::ShowDemoWindow(&show_demo_window);
-
-            // 2. Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
-            {
-                static float f = 0.0f;
-                static int counter = 0;
-
-                ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
-
-                ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
-                ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
-                ImGui::Checkbox("Another Window", &show_another_window);
-
-                ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-                ImGui::ColorEdit3("clear color", reinterpret_cast<float*>(&clear_color)); // Edit 3 floats representing a color
-
-                if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
-                    counter++;
-                ImGui::SameLine();
-                ImGui::Text("counter = %d", counter);
-
-                ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-                ImGui::End();
-            }
-
-            // 3. Show another simple window.
-            if (show_another_window)
-            {
-                ImGui::Begin("Another Window", &show_another_window);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
-                ImGui::Text("Hello from another window!");
-                if (ImGui::Button("Close Me"))
-                    show_another_window = false;
-                ImGui::End();
-            }
+            update();
 
             // Rendering
             ImGui::Render();
             int display_w, display_h;
             glfwGetFramebufferSize(m_window_, &display_w, &display_h);
             glViewport(0, 0, display_w, display_h);
-            glClearColor(clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w, clear_color.w);
+            glClearColor(m_clear_color_.x * m_clear_color_.w, m_clear_color_.y * m_clear_color_.w, 
+                m_clear_color_.z * m_clear_color_.w, m_clear_color_.w);
             glClear(GL_COLOR_BUFFER_BIT);
 
             // If you are using this code with non-legacy OpenGL header/contexts (which you should not, prefer using imgui_impl_opengl3.cpp!!),
@@ -127,6 +88,52 @@ public:
             glfwMakeContextCurrent(m_window_);
             glfwSwapBuffers(m_window_);
         }
+        close();
+    }
+
+
+private:
+
+    void update()
+    {
+        // 基本的にユーザがいじる関数
+
+        // 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
+        if (m_show_demo_window_)
+            ImGui::ShowDemoWindow(&m_show_demo_window_);
+
+        // 2. Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
+        {
+            static float f = 0.0f;
+            static int counter = 0;
+
+            ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
+
+            ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
+            ImGui::Checkbox("Demo Window", &m_show_demo_window_);      // Edit bools storing our window open/close state
+            ImGui::Checkbox("Another Window", &m_show_another_window_);
+
+            ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+
+            if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
+                counter++;
+            ImGui::SameLine();
+            ImGui::Text("counter = %d", counter);
+
+            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+            ImGui::End();
+        }
+
+        // 3. Show another simple window.
+        if (m_show_another_window_)
+        {
+            ImGui::Begin("Another Window", &m_show_another_window_);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
+            ImGui::Text("Hello from another window!");
+            if (ImGui::Button("Close Me"))
+                m_show_another_window_ = false;
+            ImGui::End();
+        }
+
     }
 
     void close()
@@ -140,9 +147,13 @@ public:
         glfwTerminate();
     }
 
-private:
-
     GLFWwindow *m_window_;
+
+    bool m_show_demo_window_;
+
+    bool m_show_another_window_;
+
+    ImVec4 m_clear_color_;
 
 };
 
@@ -150,7 +161,6 @@ int main(int, char**)
 {
     auto viewer = ImguiOpenGL2Viewer(std::string("opengl2 sample"), 760, 1280);
     viewer.render();
-    viewer.close();
 
     return 0;
 }
