@@ -15,4 +15,4 @@ $ cmake -DCMAKE_TOOLCHAIN_FILE=~/vcpkg/scripts/buildsystems/vcpkg.cmake ..
     - imgui[opengl2-binding]:x64-linux                
     - opengl:x64-linux                   
 
-opengl3 は wsl だとうまくいかないらしい…?
+opengl3 は wsl2 だとうまくいかないらしい
