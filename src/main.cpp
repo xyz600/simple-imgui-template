@@ -9,6 +9,7 @@
 #include <GLFW/glfw3.h>
 #include <memory>
 #include <iostream>
+#include "implot.h"
 
 static void glfw_error_callback(int error, const char* description)
 {
@@ -134,6 +135,29 @@ private:
             ImGui::End();
         }
 
+        // 4. imgui plot
+        // TODO: fail to build @ wsl2
+        ImGui::Begin("implot");
+        ImGui::Separator();
+        ImGui::Checkbox("Anti-Aliased Lines", &ImPlot::GetStyle().AntiAliasedLines);
+        ImGui::Checkbox("Use Local Time", &ImPlot::GetStyle().UseLocalTime);
+        ImGui::Checkbox("Use ISO 8601", &ImPlot::GetStyle().UseISO8601);
+        ImGui::Checkbox("Use 24 Hour Clock", &ImPlot::GetStyle().Use24HourClock);
+        ImGui::Separator();
+        if (ImPlot::BeginPlot("Preview")) {
+            static double now = static_cast<double>(time(0));
+            // ImPlot::SetupAxis(ImAxis_X1,NULL,ImPlotAxisFlags_Time);
+            // ImPlot::SetupAxisLimits(ImAxis_X1, now, now + 24*3600);
+            for (int i = 0; i < 10; ++i) {
+                double x[2] = {now, now + 24*3600};
+                double y[2] = {0,i/9.0};
+                ImGui::PushID(i);
+                ImPlot::PlotLine("##Line",x,y,2);
+                ImGui::PopID();
+            }
+            ImPlot::EndPlot();
+        }
+        ImGui::End();
     }
 
     void close()
