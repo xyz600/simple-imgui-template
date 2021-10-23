@@ -1,24 +1,26 @@
-// Dear ImGui: standalone example application for GLFW + OpenGL2, using legacy fixed pipeline
+// Dear ImGui: standalone example application for GLFW + OpenGL3, using legacy fixed pipeline
 // (GLFW is a cross-platform general purpose library for handling windows, inputs, OpenGL/Vulkan/Metal graphics context
 // creation, etc.) If you are new to Dear ImGui, read documentation from the docs/ folder + read the top of imgui.cpp.
 // Read online: https://github.com/ocornut/imgui/tree/master/docs
 
 #include <GLFW/glfw3.h>
+#include <algorithm>
 #include <iostream>
 #include <memory>
+#include <vector>
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
-#include "imgui_impl_opengl2.h"
+#include "imgui_impl_opengl3.h"
 
 static void glfw_error_callback(int error, const char* description)
 {
     fprintf(stderr, "Glfw Error %d: %s\n", error, description);
 }
 
-class ImguiOpenGL2Viewer
+class ImguiOpenGL3Viewer
 {
 public:
-    inline ImguiOpenGL2Viewer(const std::string title, const int height, const int width)
+    inline ImguiOpenGL3Viewer(const std::string title, const int height, const int width)
         : m_window_(nullptr),
           m_show_demo_window_(false),
           m_show_another_window_(true),
@@ -48,7 +50,7 @@ public:
 
         // Setup Platform/Renderer backends
         ImGui_ImplGlfw_InitForOpenGL(m_window_, true);
-        ImGui_ImplOpenGL2_Init();
+        ImGui_ImplOpenGL3_Init();
     }
 
     void render()
@@ -66,7 +68,7 @@ public:
             glfwPollEvents();
 
             // Start the Dear ImGui frame
-            ImGui_ImplOpenGL2_NewFrame();
+            ImGui_ImplOpenGL3_NewFrame();
             ImGui_ImplGlfw_NewFrame();
             ImGui::NewFrame();
 
@@ -87,7 +89,7 @@ public:
             // GLint last_program;
             // glGetIntegerv(GL_CURRENT_PROGRAM, &last_program);
             // glUseProgram(0);
-            ImGui_ImplOpenGL2_RenderDrawData(ImGui::GetDrawData());
+            ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
             // glUseProgram(last_program);
 
             glfwMakeContextCurrent(m_window_);
@@ -139,12 +141,56 @@ private:
             if (ImGui::Button("Close Me")) m_show_another_window_ = false;
             ImGui::End();
         }
+
+        // 4. plot widget
+        {
+            std::vector<float> data{1, 2, 3, 4, 5, 6, 7, 8, 7, 6, 5, 4, 5, 4, 3, 2, 1, 0};
+            for (auto& d : data)
+            {
+                d /= 10.0f;
+            }
+            const auto ulim = *std::max_element(data.begin(), data.end());
+            const auto llim = *std::min_element(data.begin(), data.end());
+
+            ImGui::PlotHistogram("Histogram", data.data(), static_cast<int>(data.size()), 0, NULL, llim, ulim,
+                                 ImVec2(0, 80.0f));
+        }
+
+        // 5. draw line
+        {
+            ImGui::SetNextWindowSize(ImVec2(350, 560), ImGuiCond_FirstUseEver);
+            if (!ImGui::Begin("Example: Custom rendering"))
+            {
+                ImGui::End();
+                return;
+            }
+            auto draw_list = ImGui::GetWindowDrawList();
+            static float sz = 36.0f;
+            static ImVec4 col = ImVec4(1.0f, 1.0f, 0.4f, 1.0f);
+            {
+                const ImVec2 p = ImGui::GetCursorScreenPos();
+                const ImU32 col32 = ImColor(col);
+                float x = p.x + 4.0f, y = p.y + 4.0f, spacing = 8.0f;
+
+                draw_list->AddCircleFilled(ImVec2(x + sz * 0.5f, y + sz * 0.5f), sz * 0.5f, col32, 32);
+                x += sz + spacing;
+                draw_list->AddRectFilled(ImVec2(x, y), ImVec2(x + sz, y + sz), col32);
+                x += sz + spacing;
+                draw_list->AddRectFilled(ImVec2(x, y), ImVec2(x + sz, y + sz), col32, 10.0f);
+                x += sz + spacing;
+                draw_list->AddTriangleFilled(ImVec2(x + sz * 0.5f, y), ImVec2(x + sz, y + sz - 0.5f),
+                                             ImVec2(x, y + sz - 0.5f), col32);
+                x += sz + spacing;
+                draw_list->AddRectFilledMultiColor(ImVec2(x, y), ImVec2(x + sz, y + sz), ImColor(0, 0, 0),
+                                                   ImColor(255, 0, 0), ImColor(255, 255, 0), ImColor(0, 255, 0));
+            }
+        }
     }
 
     void close()
     {
         // Cleanup
-        ImGui_ImplOpenGL2_Shutdown();
+        ImGui_ImplOpenGL3_Shutdown();
         ImGui_ImplGlfw_Shutdown();
         ImGui::DestroyContext();
 
@@ -163,7 +209,7 @@ private:
 
 int main(int, char**)
 {
-    auto viewer = ImguiOpenGL2Viewer(std::string("opengl2 sample"), 760, 1280);
+    auto viewer = ImguiOpenGL3Viewer(std::string("OpenGL3 sample"), 760, 1280);
     viewer.render();
 
     return 0;
