@@ -10,17 +10,17 @@
 #include <vector>
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
-#include "imgui_impl_opengl3.h"
+#include "imgui_impl_opengl2.h"
 
 static void glfw_error_callback(int error, const char* description)
 {
     fprintf(stderr, "Glfw Error %d: %s\n", error, description);
 }
 
-class ImguiOpenGL3Viewer
+class ImguiOpenGL2Viewer
 {
 public:
-    inline ImguiOpenGL3Viewer(const std::string title, const int height, const int width)
+    inline ImguiOpenGL2Viewer(const std::string title, const int height, const int width)
         : m_window_(nullptr),
           m_show_demo_window_(false),
           m_show_another_window_(true),
@@ -50,7 +50,7 @@ public:
 
         // Setup Platform/Renderer backends
         ImGui_ImplGlfw_InitForOpenGL(m_window_, true);
-        ImGui_ImplOpenGL3_Init();
+        ImGui_ImplOpenGL2_Init();
     }
 
     void render()
@@ -68,7 +68,7 @@ public:
             glfwPollEvents();
 
             // Start the Dear ImGui frame
-            ImGui_ImplOpenGL3_NewFrame();
+            ImGui_ImplOpenGL2_NewFrame();
             ImGui_ImplGlfw_NewFrame();
             ImGui::NewFrame();
 
@@ -89,7 +89,7 @@ public:
             // GLint last_program;
             // glGetIntegerv(GL_CURRENT_PROGRAM, &last_program);
             // glUseProgram(0);
-            ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+            ImGui_ImplOpenGL2_RenderDrawData(ImGui::GetDrawData());
             // glUseProgram(last_program);
 
             glfwMakeContextCurrent(m_window_);
@@ -190,7 +190,7 @@ private:
     void close()
     {
         // Cleanup
-        ImGui_ImplOpenGL3_Shutdown();
+        ImGui_ImplOpenGL2_Shutdown();
         ImGui_ImplGlfw_Shutdown();
         ImGui::DestroyContext();
 
@@ -209,7 +209,7 @@ private:
 
 int main(int, char**)
 {
-    auto viewer = ImguiOpenGL3Viewer(std::string("OpenGL3 sample"), 760, 1280);
+    auto viewer = ImguiOpenGL2Viewer(std::string("OpenGL2 sample"), 760, 1280);
     viewer.render();
 
     return 0;
